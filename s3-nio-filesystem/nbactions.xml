@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>CUSTOM-Distribute</actionName>
+            <displayName>Distribute</displayName>
+            <goals>
+                <goal>clean</goal>
+                <goal>deploy</goal>
+            </goals>
+            <activatedProfiles>
+                <activatedProfile>release</activatedProfile>
+            </activatedProfiles>
+        </action>
+        <action>
+            <actionName>CUSTOM-SonarCloud</actionName>
+            <displayName>SonarCloud</displayName>
+            <goals>
+                <goal>clean</goal>
+                <goal>org.jacoco:jacoco-maven-plugin:prepare-agent</goal>
+                <goal>package</goal>
+                <goal>sonar:sonar</goal>
+                
+                
+                
+                
+                
+                
+            </goals>
+            <properties>
+                <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+                <sonar.organization>bytemechanics-github</sonar.organization>
+                <sonar.login>219ee1739efe09bba41c7ffbea4094014b0c149d</sonar.login>
+            </properties>
+        </action>
+    </actions>
