@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.bytemechanics</groupId>
+        <artifactId>bytemechanics-maven</artifactId>
+        <version>1.0.4</version>
+    </parent>
+    <groupId>org.bytemechanics.filesystem</groupId>
+    <artifactId>s3-nio-filesystem</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+	<name>S3 NIO FileSystem</name>
+	<description>S3 NIO2 filesystem implementation</description>
+	<url>http://www.bytemechanics.org</url>
+	<developers>
+		<developer>
+			<name>Albert Farré Figueras</name>
+			<email>afarre@gmail.com</email>
+			<url>https://www.linkedin.com/in/albert-farré-figueras-4348aa2</url>
+			<roles>
+				<role>Developer</role>
+				<role>Product owner</role>
+			</roles>
+			<timezone>GMT+1</timezone>
+		</developer>
+	</developers>
+	<licenses>
+		<license>
+			<name>Apache License 2.0</name>
+			<url>http://opensource.org/licenses/Apache-2.0</url>
+		</license>
+	</licenses>
+	<organization>
+		<name>Byte Mechanics</name>
+		<url>http://www.bytemechanics.org</url>
+	</organization>
+	<scm>
+		<connection>https://github.com/bytemechanics/service-repository.git</connection>
+		<url>https://github.com/bytemechanics/service-repository</url>
+	</scm>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.jclouds.api</groupId>
+			<artifactId>s3</artifactId>
+			<version>2.1.0</version>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.bytemechanics.maven</groupId>
+				<artifactId>copysource-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>copy-classes</goal>
+						</goals>
+						<configuration>
+							<copies>
+								<copy>
+									<artifact>org.bytemechanics:copy-commons:1.2.0</artifact>
+									<classes>
+										<class>org.bytemechanics.commons.functional.LambdaUnchecker</class>
+									</classes>
+									<fromPackage>org.bytemechanics.commons</fromPackage>
+									<toPackage>org.bytemechanics.filesystem.s3.internal.copy.commons</toPackage>
+								</copy>
+							</copies>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

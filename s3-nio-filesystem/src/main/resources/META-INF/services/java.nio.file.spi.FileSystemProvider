@@ -1,0 +1,2 @@
+org.bytemechanics.filesystem.s3.S3FileSystemProvider
+org.bytemechanics.filesystem.s3.S3SecureFileSystemProvider
