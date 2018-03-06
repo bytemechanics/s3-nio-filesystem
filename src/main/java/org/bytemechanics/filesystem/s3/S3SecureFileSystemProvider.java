@@ -16,9 +16,7 @@
 package org.bytemechanics.filesystem.s3;
 
 import java.net.URI;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import org.bytemechanics.filesystem.s3.internal.copy.commons.functional.LambdaUnchecker;
 
 /**
@@ -28,14 +26,6 @@ import org.bytemechanics.filesystem.s3.internal.copy.commons.functional.LambdaUn
 public class S3SecureFileSystemProvider extends S3FileSystemProvider{
 
 	private static final String FILE_SYSTEM_SCHEME="ss3";
-	
-	private final Map<URI,S3FileSystem> fileSystems;
-	
-	
-	public S3SecureFileSystemProvider(){
-		this.fileSystems=new ConcurrentHashMap<>();
-	}
-	
 	
 	@Override
 	public String getScheme() {

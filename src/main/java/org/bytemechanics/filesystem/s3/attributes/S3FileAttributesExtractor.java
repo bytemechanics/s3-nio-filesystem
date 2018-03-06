@@ -18,6 +18,7 @@ package org.bytemechanics.filesystem.s3.attributes;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import org.bytemechanics.filesystem.s3.internal.copy.commons.string.SimpleFormat;
 
 /**
  * @author afarre
@@ -83,6 +84,6 @@ public enum S3FileAttributesExtractor {
 					.filter(attributeExtractor -> attributeExtractor.view.equals(_view))
 					.filter(attributeExtractor -> attributeExtractor.attribute.equals(_attribute))
 					.findAny()
-						.orElseThrow(() -> new IllegalArgumentException(String.format("No attribute %1$s found at %2$s view",_attribute,_view)));
+						.orElseThrow(() -> new IllegalArgumentException(SimpleFormat.format("No attribute {} found at {} view",_attribute,_view)));
 	}
 }

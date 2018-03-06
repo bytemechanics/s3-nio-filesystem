@@ -64,6 +64,7 @@
 									<artifact>org.bytemechanics:copy-commons:1.2.0</artifact>
 									<classes>
 										<class>org.bytemechanics.commons.functional.LambdaUnchecker</class>
+										<class>org.bytemechanics.commons.string.SimpleFormat</class>
 									</classes>
 									<fromPackage>org.bytemechanics.commons</fromPackage>
 									<toPackage>org.bytemechanics.filesystem.s3.internal.copy.commons</toPackage>

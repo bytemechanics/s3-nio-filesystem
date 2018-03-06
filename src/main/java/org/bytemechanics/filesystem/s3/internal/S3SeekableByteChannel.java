@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import org.bytemechanics.filesystem.s3.attributes.S3FileAttribute;
 import org.bytemechanics.filesystem.s3.attributes.S3FileAttributeView;
 import org.bytemechanics.filesystem.s3.internal.copy.commons.functional.LambdaUnchecker;
+import org.bytemechanics.filesystem.s3.internal.copy.commons.string.SimpleFormat;
 import org.bytemechanics.filesystem.s3.path.S3AbsolutePath;
 
 /**
@@ -67,9 +68,9 @@ public class S3SeekableByteChannel implements SeekableByteChannel {
 									.map(metadata -> new S3FileAttributeView(metadata))
 									.orElse(null);
         if((this.options.contains(StandardOpenOption.CREATE_NEW))&&(this.attributes!=null))
-            throw new FileAlreadyExistsException(String.format("Object %s already exists", _path));
+            throw new FileAlreadyExistsException(SimpleFormat.format("Object {} already exists", _path));
         if((!this.options.contains(StandardOpenOption.CREATE)&&!this.options.contains(StandardOpenOption.CREATE_NEW))&&(this.attributes==null))
-            throw new FileAlreadyExistsException(String.format("Object %s not exists", _path));
+            throw new FileAlreadyExistsException(SimpleFormat.format("Object {} not exists", _path));
         this.tempFile = Files.createTempFile("temp-s3-", _path.toString().replaceAll("/", "_"));
         boolean removeTempFile = true;
         try {
@@ -80,7 +81,7 @@ public class S3SeekableByteChannel implements SeekableByteChannel {
 								Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
 							} catch (IOException e) {
 					            LambdaUnchecker.uncheckedGet(
-										() -> {throw new IOException(String.format("Can not recover object %s", _path));}
+										() -> {throw new IOException(SimpleFormat.format("Can not recover object {}", _path));}
 								);
 							}
 						});

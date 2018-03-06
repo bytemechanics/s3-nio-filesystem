@@ -45,7 +45,9 @@ public class S3FileSystem extends FileSystem{
 	
 	protected S3FileSystem(final URI _uri,final S3FileSystemProvider _provider,final S3Client _client){
 		this.uri=_uri;
-		this.bucket=_uri.getPath().substring(1).replace('/','-');
+		this.bucket=_uri.getPath()
+							.substring(1)
+							.replace('/','-');
 		this.provider=_provider;
 		this.client=_client;
 	}
@@ -82,7 +84,7 @@ public class S3FileSystem extends FileSystem{
 		return this.client.listStorage()
 								.filter(storageMetadata -> storageMetadata.getType().equals(StorageType.CONTAINER))
 								.filter(storageMetadata -> storageMetadata.getName().equals(this.bucket))
-								.map(storageMetadata -> new S3FileStore(storageMetadata));
+								.map(S3FileStore::new);
 	}
 	@Override
 	public Iterable<FileStore> getFileStores() {

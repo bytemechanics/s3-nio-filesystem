@@ -17,6 +17,7 @@ package org.bytemechanics.filesystem.s3.path;
 
 import java.nio.file.Path;
 import org.bytemechanics.filesystem.s3.S3FileSystem;
+import org.bytemechanics.filesystem.s3.internal.copy.commons.string.SimpleFormat;
 
 /**
  * @author afarre
@@ -45,6 +46,6 @@ public class S3RelativePath extends S3Path {
 
     @Override
     public Path toAbsolutePath() {
-        throw new IllegalStateException(String.format("Relative path cannot be made absolute: %1%s", this));
+        throw new IllegalStateException(SimpleFormat.format("Relative path cannot be made absolute: {}", this));
     }
 }

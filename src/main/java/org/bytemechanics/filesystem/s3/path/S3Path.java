@@ -45,8 +45,8 @@ public abstract class S3Path implements Path {
     protected S3Path(final S3FileSystem _fileSystem,final String _first,final String... _more) {
 		this.fileSystem=Optional.ofNullable(_fileSystem)
 									.orElseThrow(() -> new NullPointerException("Mandatory parameter filesystem"));
-		Optional.ofNullable(_first)
-					.orElseThrow(() -> new NullPointerException("Mandatory _first path"));
+		if(_first==null)
+			throw new NullPointerException("Mandatory _first path");
 		this.folders=Stream.concat(Stream.of(_first),Stream.of(_more))
 								.flatMap(pathUnit -> Stream.of(pathUnit.split(PATH_SEPARATOR))
 															.filter(pathElement -> !pathElement.trim().isEmpty()))

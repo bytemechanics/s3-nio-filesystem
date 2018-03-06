@@ -35,7 +35,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.spi.FileSystemProvider;
-import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -51,7 +50,9 @@ import org.bytemechanics.filesystem.s3.internal.S3Client;
 import org.bytemechanics.filesystem.s3.internal.S3SeekableByteChannel;
 import org.bytemechanics.filesystem.s3.internal.Tuple;
 import org.bytemechanics.filesystem.s3.internal.copy.commons.functional.LambdaUnchecker;
+import org.bytemechanics.filesystem.s3.internal.copy.commons.string.SimpleFormat;
 import org.bytemechanics.filesystem.s3.path.S3AbsolutePath;
+import org.bytemechanics.filesystem.s3.path.S3Path;
 import org.jclouds.blobstore.options.CopyOptions;
 import org.jclouds.io.ContentMetadata;
 
@@ -78,7 +79,7 @@ public class S3FileSystemProvider extends FileSystemProvider{
 
 	private String getUser(final URI _uri,final Map<String, ?> _environment){
 		return Optional.ofNullable(_uri)
-					.map(uri -> uri.getUserInfo())
+					.map(URI::getUserInfo)
 					.map(userInfo -> userInfo.split(":"))
 					.filter(userInfoSplit -> userInfoSplit.length>0)
 					.map(userInfoSplit -> userInfoSplit[0])
@@ -88,7 +89,7 @@ public class S3FileSystemProvider extends FileSystemProvider{
 	}
 	private String getPassword(final URI _uri,final Map<String, ?> _environment){
 		return Optional.ofNullable(_uri)
-					.map(uri -> uri.getUserInfo())
+					.map(URI::getUserInfo)
 					.map(passwordInfo -> passwordInfo.split(":"))
 					.filter(passwordInfoSplit -> passwordInfoSplit.length>1)
 					.map(passwordInfoSplit -> passwordInfoSplit[1])
@@ -107,7 +108,7 @@ public class S3FileSystemProvider extends FileSystemProvider{
 	
 	protected boolean existFileSystem(final URI _uri){
 		return clean(_uri)
-					.map(uri -> this.fileSystems.containsKey(uri))
+					.map(this.fileSystems::containsKey)
 					.orElse(false);
 	}
 
@@ -137,14 +138,14 @@ public class S3FileSystemProvider extends FileSystemProvider{
 													,(properties1,properties2) -> {properties1.putAll(properties2); return properties1;}))
 					.map(config -> new S3Client(clientURI(_uri), getUser(_uri,_environment), getPassword(_uri,_environment), config))
 					.flatMap(s3Client -> createFileSystem(_uri,s3Client))
-					.orElseThrow(() -> new FileSystemAlreadyExistsException(MessageFormat.format("FileSystem already exist for uri {0}", _uri)));
+					.orElseThrow(() -> new FileSystemAlreadyExistsException(SimpleFormat.format("FileSystem already exist for uri {}", _uri)));
 	}
 
 	@Override
 	public FileSystem getFileSystem(final URI _uri) {
 		return clean(_uri)
-					.map(uri -> this.fileSystems.get(uri))
-					.orElseThrow(() -> new FileSystemNotFoundException(MessageFormat.format("FileSystem not exist for uri {0}", _uri)));
+					.map(this.fileSystems::get)
+					.orElseThrow(() -> new FileSystemNotFoundException(SimpleFormat.format("FileSystem not exist for uri {}", _uri)));
 	}
 
 	@Override
@@ -159,7 +160,7 @@ public class S3FileSystemProvider extends FileSystemProvider{
 													.map(openOption -> (StandardOpenOption)openOption)
 													.collect(Collectors.toSet());
 		final S3AbsolutePath absolutePath=s3AbsolutePathVerified(_path)
-											.orElseThrow(() -> new IOException(String.format("Path %1$s must be absolute",_path)));
+											.orElseThrow(() -> new IOException(SimpleFormat.format("Path {} must be absolute",_path)));
 		return new S3SeekableByteChannel(absolutePath,absolutePath.getFileSystem().getClient(), options);
 	}
 
@@ -192,12 +193,12 @@ public class S3FileSystemProvider extends FileSystemProvider{
 															.map(copyOption -> (StandardCopyOption)copyOption)
 															.collect(Collectors.toSet());
 				final S3AbsolutePath sourcePath=existVerified(_source)
-													.orElseThrow(() -> new IOException(String.format("Can not copy non existent source file %1%s",_source)));
+													.orElseThrow(() -> new IOException(SimpleFormat.format("Can not copy non existent source file {}",_source)));
 				final S3FileAttributeView fileAttributes=getFileAttributes(sourcePath)
-																	.filter(view -> view.isRegularFile())
-																	.orElseThrow(() -> new IOException(String.format("Source %1%s is folder: can not copy entire folders",_source)));
+																	.filter(S3FileAttributeView::isRegularFile)
+																	.orElseThrow(() -> new IOException(SimpleFormat.format("Source {} is folder: can not copy entire folders",_source)));
 				final S3AbsolutePath targetPath=existVerified(_target)
-													.orElseThrow(() -> new IOException(String.format("Can not copy non existent target file %1%s",_target)));
+													.orElseThrow(() -> new IOException(SimpleFormat.format("Can not copy non existent target file {}",_target)));
 
 				CopyOptions.Builder copyOptionsBuilder=CopyOptions.builder();
 				if(options.contains(StandardCopyOption.COPY_ATTRIBUTES)){
@@ -227,7 +228,9 @@ public class S3FileSystemProvider extends FileSystemProvider{
 	@Override
 	public boolean isHidden(final Path _path) throws IOException {
 		return existVerified(_path)
-					.map(path -> path.getFileName().toString().startsWith("."))
+					.map(S3Path::getFileName)
+					.map(Path::toString)
+					.map(filenameString -> filenameString.startsWith("."))
 					.orElse(false);
 	}
 
@@ -238,13 +241,13 @@ public class S3FileSystemProvider extends FileSystemProvider{
 												.getFileStoresStream()
 													.filter(filestore -> filestore.name().equals(path.getBucket()))
 													.findAny())
-						.orElseThrow(() -> new IOException(String.format("No filestore matches with path %1$s",_path)));
+						.orElseThrow(() -> new IOException(SimpleFormat.format("No filestore matches with path {}",_path)));
 	}
 
 	@Override
 	public void checkAccess(final Path _path,final AccessMode... _modes) throws IOException {
 		if(!exist(_path)){
-			throw new IOException(String.format("File %1$s not exist",_path));
+			throw new IOException(SimpleFormat.format("File {} not exist",_path));
 		}
 		if(Stream.of(_modes).anyMatch(mode -> AccessMode.EXECUTE.equals(mode))){
 			throw new IOException("Access mode EXECUTE not supported");
@@ -253,7 +256,7 @@ public class S3FileSystemProvider extends FileSystemProvider{
 
 	protected Optional<S3AbsolutePath> s3AbsolutePathVerified(final Path _path){
 		return Optional.ofNullable(_path)
-						.filter(path -> path.isAbsolute())
+						.filter(Path::isAbsolute)
 						.filter(path -> path instanceof S3AbsolutePath)
 						.map(path -> (S3AbsolutePath)path);
 	}

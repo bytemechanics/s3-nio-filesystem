@@ -15,7 +15,7 @@
  */
 package org.bytemechanics.filesystem.s3.internal;
 
-import java.text.MessageFormat;
+import org.bytemechanics.filesystem.s3.internal.copy.commons.string.SimpleFormat;
 
 /**
  * @author afarre
@@ -56,6 +56,6 @@ public class Tuple<A,B> {
 
 	@Override
 	public String toString() {
-		return MessageFormat.format("Tuple[firstValue={0}, secondValue={1}]", firstValue, secondValue);
+		return SimpleFormat.format("Tuple[firstValue={}, secondValue={}]", firstValue, secondValue);
 	}
 }
