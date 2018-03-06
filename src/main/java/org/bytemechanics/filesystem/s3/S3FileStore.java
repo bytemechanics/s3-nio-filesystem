@@ -23,6 +23,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import org.bytemechanics.filesystem.s3.attributes.S3FileStoreAttribute;
 import org.bytemechanics.filesystem.s3.attributes.S3FileStoreAttributeView;
+import org.bytemechanics.filesystem.s3.internal.copy.commons.string.SimpleFormat;
 import org.jclouds.blobstore.domain.StorageMetadata;
 
 /**
@@ -95,7 +96,7 @@ public class S3FileStore extends FileStore{
 	@Override
 	public <V extends FileStoreAttributeView> V getFileStoreAttributeView(Class<V> _type) {
 		if (_type != S3FileStoreAttributeView.class)
-			throw new IllegalArgumentException(String.format("FileStoreAttributeView of type %1$s is not supported.",_type.getName()));
+			throw new IllegalArgumentException(SimpleFormat.format("FileStoreAttributeView of type {} is not supported.",_type.getName()));
 		return (V)this.attributeView;
 	}
 
