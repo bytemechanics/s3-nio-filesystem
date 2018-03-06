@@ -50,7 +50,7 @@ public abstract class S3Path implements Path {
 		this.folders=Stream.concat(Stream.of(_first),Stream.of(_more))
 								.flatMap(pathUnit -> Stream.of(pathUnit.split(PATH_SEPARATOR))
 															.filter(pathElement -> !pathElement.trim().isEmpty()))
-								.map(pathUnit -> pathUnit.trim())
+								.map(String::trim)
 								.collect(Collectors.toList());
     }
 	
@@ -75,7 +75,7 @@ public abstract class S3Path implements Path {
 		
 		Path reply=null;
 		
-        if(this.folders.size()>0) {
+        if(!this.folders.isEmpty()) {
 			reply=buildPath(this.fileSystem, this.folders.get(this.folders.size()-2));
 		}
 		

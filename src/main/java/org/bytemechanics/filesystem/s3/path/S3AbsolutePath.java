@@ -16,6 +16,7 @@
 package org.bytemechanics.filesystem.s3.path;
 
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -68,4 +69,27 @@ public class S3AbsolutePath extends S3Path {
 	public Path toAbsolutePath() {
 		return this;
 	}
+
+	@Override
+	public int hashCode() {
+		int hash = super.hashCode();
+		hash = 23 * hash + Objects.hashCode(this.bucket);
+		return hash;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final S3AbsolutePath other = (S3AbsolutePath) obj;
+		return (super.equals(obj))&&(Objects.equals(this.bucket, other.bucket));
+	}
+	
 }

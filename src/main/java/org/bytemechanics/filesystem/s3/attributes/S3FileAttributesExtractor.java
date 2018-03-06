@@ -26,20 +26,20 @@ import org.bytemechanics.filesystem.s3.internal.copy.commons.string.SimpleFormat
  */
 public enum S3FileAttributesExtractor {
 
-	lastModifiedTime("basic","lastModifiedTime",(attributeView) -> attributeView.lastModifiedTime()),
-	lastAccessTime("basic","lastAccessTime",(attributeView) -> attributeView.lastAccessTime()),
-	creationTime("basic","creationTime",(attributeView) -> attributeView.creationTime()),
-	isRegularFile("basic","isRegularFile",(attributeView) -> attributeView.isRegularFile()),
-	isDirectory("basic","isDirectory",(attributeView) -> attributeView.isDirectory()),
-	isSymbolicLink("basic","isSymbolicLink",(attributeView) -> attributeView.isSymbolicLink()),
-	isOther("basic","isOther",(attributeView) -> attributeView.isOther()),
-	size("basic","size",(attributeView) -> attributeView.size()),
-	fileKey("basic","fileKey",(attributeView) -> attributeView.fileKey()),
-	owner("posix","owner",(attributeView) -> attributeView.owner()),
-	group("posix","group",(attributeView) -> attributeView.group()),
-	permissions("posix","permissions",(attributeView) -> attributeView.permissions()),	
+	LASTMODIFIEDTIME("basic","lastModifiedTime",attributeView -> attributeView.lastModifiedTime()),
+	LASTACCESSTIME("basic","lastAccessTime",attributeView -> attributeView.lastAccessTime()),
+	CREATIONTIME("basic","creationTime",attributeView -> attributeView.creationTime()),
+	ISREGULARFILE("basic","isRegularFile",attributeView -> attributeView.isRegularFile()),
+	ISDIRECTORY("basic","isDirectory",attributeView -> attributeView.isDirectory()),
+	ISSYMBOLICLINK("basic","isSymbolicLink",attributeView -> attributeView.isSymbolicLink()),
+	ISOTHER("basic","isOther",attributeView -> attributeView.isOther()),
+	SIZE("basic","size",attributeView -> attributeView.size()),
+	FILEKEY("basic","fileKey",attributeView -> attributeView.fileKey()),
+	OWNER("posix","owner",attributeView -> attributeView.owner()),
+	GROUP("posix","group",attributeView -> attributeView.group()),
+	PERMISSIONS("posix","permissions",attributeView -> attributeView.permissions()),	
 	;
-	
+		
 	private final String view;
 	private final String attribute;
 	private final Function<S3FileAttributeView,Object> extractor;
@@ -75,7 +75,6 @@ public enum S3FileAttributesExtractor {
 	}
 	
 	public static final Stream<S3FileAttributesExtractor> getAttributes(final String _viewFilter){
-		S3FileAttributesExtractor.valueOf(_viewFilter);
 		return Stream.of(S3FileAttributesExtractor.values())
 					.filter(attributeExtractor -> attributeExtractor.view.equals(_viewFilter));
 	}

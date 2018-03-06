@@ -37,6 +37,7 @@ import org.jclouds.blobstore.domain.StorageType;
 import org.jclouds.blobstore.options.CopyOptions;
 import org.jclouds.blobstore.options.PutOptions;
 import org.jclouds.io.Payload;
+import org.jclouds.io.PayloadEnclosing;
 import static org.jclouds.io.Payloads.newByteArrayPayload;
 
 /**
@@ -45,7 +46,8 @@ import static org.jclouds.io.Payloads.newByteArrayPayload;
  */
 public class S3Client implements Closeable{
 
-	private final String MULTIPART_MINSIZE="s3.filesystem.upload.multipart.minsize";
+	private static final String MULTIPART_MINSIZE="s3.filesystem.upload.multipart.minsize";
+	private static final String FOLDER_SELF_REFERENCE=".self";
 	
 	private final long multipartMinSize;
 	private final BlobStore blobStore;
@@ -62,17 +64,18 @@ public class S3Client implements Closeable{
 								.buildView(BlobStoreContext.class)
 									.getBlobStore();
 		this.multipartMinSize=Optional.ofNullable(_environment.getProperty(MULTIPART_MINSIZE))
-										.map(value -> Long.valueOf(value))
+										.map(Long::valueOf)
 										.orElse(Long.MAX_VALUE);
 	}
 	
-	public Stream<? extends StorageMetadata> listStorage(){
+	public Stream<StorageMetadata> listStorage(){
 		return this.blobStore.list()
-								.stream();
+								.stream()
+									.map(storageMetadata -> (StorageMetadata)storageMetadata);
 	}
 	public String createFolder(final S3AbsolutePath _path){
 		return Optional.ofNullable(_path)
-					.map(path -> path.resolve(".self"))
+					.map(path -> path.resolve(FOLDER_SELF_REFERENCE))
 					.map(path -> (S3AbsolutePath)path)
 					.map(absolutePath -> Tuple.of(absolutePath,
 													this.blobStore.blobBuilder(absolutePath.getBucketPath())
@@ -87,7 +90,7 @@ public class S3Client implements Closeable{
 		Optional.ofNullable(_path)
 				.map(path -> 
 						(!this.blobStore.blobExists(path.getBucket(), path.getBucketPath()))? 
-								path.resolve(".self") 
+								path.resolve(FOLDER_SELF_REFERENCE) 
 								: path)
 				.map(path -> (S3AbsolutePath)path)
 				.ifPresent(path -> this.blobStore.removeBlob(path.getBucket(), path.getBucketPath()));
@@ -97,26 +100,26 @@ public class S3Client implements Closeable{
 	}
 	public boolean exist(final S3AbsolutePath _path){
 		return this.blobStore.blobExists(_path.getBucket(), _path.getBucketPath())
-				||this.blobStore.blobExists(_path.getBucket(),((S3AbsolutePath)_path.resolve(".self")).getBucketPath());
+				||this.blobStore.blobExists(_path.getBucket(),((S3AbsolutePath)_path.resolve(FOLDER_SELF_REFERENCE)).getBucketPath());
 	}
 	public Optional<BlobMetadata> getBlobMetadata(final S3AbsolutePath _path){
 		return Optional.ofNullable(
 							Optional.ofNullable(this.blobStore.blobMetadata(_path.getBucket(), _path.getBucketPath()))
 								.orElseGet(() -> 
-										this.blobStore.blobMetadata(_path.getBucket(), ((S3AbsolutePath)_path.resolve(".self")).getBucketPath())));
+										this.blobStore.blobMetadata(_path.getBucket(), ((S3AbsolutePath)_path.resolve(FOLDER_SELF_REFERENCE)).getBucketPath())));
 	}
 	public Optional<Payload> getBlob(final S3AbsolutePath _path){
 		return Optional.ofNullable(this.blobStore.getBlob(_path.getBucket(), _path.getBucketPath()))
-									.map(blob ->  blob.getPayload());
+									.map(PayloadEnclosing::getPayload);
 	}
 	public String putBlob(final S3AbsolutePath _path,final long _length,final InputStream _stream,final String _mediaType,final Map<String,String> _userMetadata){
 		final Blob blob=this.blobStore.blobBuilder(_path.getBucketPath())
 											.payload(_stream)
 											.contentType(Optional.ofNullable(_mediaType)
-																	.orElseGet(() -> MediaType.ANY_APPLICATION_TYPE.toString()))
+																	.orElseGet(MediaType.ANY_APPLICATION_TYPE::toString))
 											.contentLength(_length)
 											.userMetadata(Optional.ofNullable(_userMetadata)
-																	.orElseGet(() -> Collections.emptyMap()))
+																	.orElseGet(Collections::emptyMap))
 										.build();
 		return this.blobStore.putBlob(_path.getBucket(), blob, PutOptions.Builder.multipart((this.multipartMinSize<blob.getMetadata().getContentMetadata().getContentLength())));
 	}
