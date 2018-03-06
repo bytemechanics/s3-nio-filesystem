@@ -8,7 +8,7 @@
     </parent>
     <groupId>org.bytemechanics.filesystem</groupId>
     <artifactId>s3-nio-filesystem</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <packaging>jar</packaging>
 	<name>S3 NIO FileSystem</name>
 	<description>S3 NIO2 filesystem implementation</description>
