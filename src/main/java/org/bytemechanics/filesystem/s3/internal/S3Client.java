@@ -15,7 +15,9 @@
  */
 package org.bytemechanics.filesystem.s3.internal;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.net.MediaType;
+import com.google.inject.Module;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +40,7 @@ import org.jclouds.blobstore.options.CopyOptions;
 import org.jclouds.blobstore.options.PutOptions;
 import org.jclouds.io.Payload;
 import static org.jclouds.io.Payloads.newByteArrayPayload;
+import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 
 /**
  * @author afarre
@@ -58,6 +61,7 @@ public class S3Client implements Closeable{
 							.newBuilder("s3")
 								.endpoint(MessageFormat.format("{0}://{1}:{2}",_endpoint.getScheme(),_endpoint.getHost(),String.valueOf(_endpoint.getPort())))
 								.overrides(Optional.ofNullable(_environment).orElse(new Properties()))
+								.modules(ImmutableSet.<Module> of(new SLF4JLoggingModule()))
 								.credentials(_user,_password)
 								.buildView(BlobStoreContext.class)
 									.getBlobStore();
