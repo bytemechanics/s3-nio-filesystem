@@ -24,12 +24,13 @@ import java.nio.file.PathMatcher;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.bytemechanics.filesystem.s3.internal.S3Client;
+import org.bytemechanics.filesystem.s3.internal.copy.commons.string.SimpleFormat;
 import org.bytemechanics.filesystem.s3.path.S3AbsolutePath;
-import org.bytemechanics.filesystem.s3.path.S3RelativePath;
 import org.jclouds.blobstore.domain.StorageType;
 
 /**
@@ -43,14 +44,19 @@ public class S3FileSystem extends FileSystem{
 	private final String bucket;
 	private S3Client client;
 	
-	protected S3FileSystem(final URI _uri,final S3FileSystemProvider _provider,final S3Client _client){
+	protected S3FileSystem(final URI _uri,final S3FileSystemProvider _provider) throws IOException{
+		this(_uri,_provider,null);
+	}
+	protected S3FileSystem(final URI _uri,final S3FileSystemProvider _provider,final S3Client _client) throws IOException{
 		this.uri=_uri;
-		this.bucket=_uri.getPath()
-							.substring(1)
-							.replace('/','-');
+		this.bucket=Optional.ofNullable(_uri.getPath())
+								.map(path -> path.substring(1))
+								.map(path -> path.replace('/','-'))
+								.orElseThrow(() -> new IOException(SimpleFormat.format("URI {} must have bucket as first level path",_uri)));
 		this.provider=_provider;
 		this.client=_client;
 	}
+	
 	
 	public URI getKey(){
 		return this.uri;
@@ -58,6 +64,10 @@ public class S3FileSystem extends FileSystem{
 	
 	protected S3Client getClient(){
 		return this.client;
+	}
+	protected S3FileSystem setClient(final S3Client _client){
+		this.client=_client;
+		return this;
 	}
 	
 	@Override
@@ -80,23 +90,19 @@ public class S3FileSystem extends FileSystem{
 		return S3AbsolutePath.PATH_SEPARATOR;
 	}
 
-	protected Stream<FileStore> getFileStoresStream() {
+	@Override
+	public Iterable<FileStore> getFileStores() {
 		return this.client.listStorage()
 								.filter(storageMetadata -> storageMetadata.getType().equals(StorageType.CONTAINER))
 								.filter(storageMetadata -> storageMetadata.getName().equals(this.bucket))
-								.map(S3FileStore::new);
-	}
-	@Override
-	public Iterable<FileStore> getFileStores() {
-		return getFileStoresStream()
-					.collect(Collectors.toList());
+								.map(S3FileStore::new)
+								.collect(Collectors.toList());
 	}
 
 	@Override
 	public Iterable<Path> getRootDirectories() {
-		return getFileStoresStream()
-					.map(fileStore -> new S3AbsolutePath(fileStore.name(),this,""))
-					.collect(Collectors.toList());
+		return Stream.of(new S3AbsolutePath(this.bucket,this,""))
+						.collect(Collectors.toList());
 	}
 
 
@@ -108,11 +114,7 @@ public class S3FileSystem extends FileSystem{
 
 	@Override
 	public Path getPath(final String _first,final String... _more) {
-		return getFileStoresStream()
-					.map(fileStore -> new S3AbsolutePath(fileStore.name(),this,_first,_more))
-					.map(s3Path -> (Path)s3Path)
-					.findAny()
-						.orElse(new S3RelativePath(this, _first, _more));
+		return new S3AbsolutePath(this.bucket,this,_first,_more);
 	}
 
 	@Override
