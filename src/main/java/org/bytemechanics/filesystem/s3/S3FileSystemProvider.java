@@ -85,7 +85,7 @@ public class S3FileSystemProvider extends FileSystemProvider{
 					.filter(userInfoSplit -> userInfoSplit.length>0)
 					.map(userInfoSplit -> userInfoSplit[0])
 					.map(userEncoded -> LambdaUnchecker.uncheckedGet(() -> URLDecoder.decode(userEncoded, "UTF-8")))
-					.orElseGet(() -> String.valueOf(_environment.get(S3FileSystemEnvironment.PROPERTY_CONNECTION_USER.getkey())));
+					.orElseGet(() -> String.valueOf(_environment.get(S3FileSystemEnvironment.PROPERTY_CONNECTION_USER.name())));
 		
 	}
 	private String getPassword(final URI _uri,final Map<String, ?> _environment){
@@ -95,7 +95,7 @@ public class S3FileSystemProvider extends FileSystemProvider{
 					.filter(passwordInfoSplit -> passwordInfoSplit.length>1)
 					.map(passwordInfoSplit -> passwordInfoSplit[1])
 					.map(passwordEncoded -> LambdaUnchecker.uncheckedGet(() -> URLDecoder.decode(passwordEncoded, "UTF-8")))
-					.orElseGet(() -> String.valueOf(_environment.get(S3FileSystemEnvironment.PROPERTY_CONNECTION_PASSWORD.getkey())));
+					.orElseGet(() -> String.valueOf(_environment.get(S3FileSystemEnvironment.PROPERTY_CONNECTION_PASSWORD.name())));
 	}
 	private Optional<URI> clean(final URI _uri){
 		return  Optional.ofNullable(_uri)

@@ -39,7 +39,7 @@ public enum S3FileAttributesExtractor {
 	GROUP(S3FileAttributeType.POSIX,"group",attributeView -> attributeView.group()),
 	PERMISSIONS(S3FileAttributeType.POSIX,"permissions",attributeView -> attributeView.permissions()),	
 	;
-	
+		
 	private final String view;
 	private final String attribute;
 	private final Function<S3FileAttributeView,Object> extractor;
@@ -75,7 +75,6 @@ public enum S3FileAttributesExtractor {
 	}
 	
 	public static final Stream<S3FileAttributesExtractor> getAttributes(final String _viewFilter){
-		S3FileAttributesExtractor.valueOf(_viewFilter);
 		return Stream.of(S3FileAttributesExtractor.values())
 					.filter(attributeExtractor -> attributeExtractor.view.equals(_viewFilter));
 	}

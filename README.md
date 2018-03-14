@@ -1,5 +1,5 @@
 # S3 NIO Filesystem
-[![Latest version](https://maven-badges.herokuapp.com/maven-central/org.bytemechanics/s3-nio-filesystem.filesystem/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.bytemechanics.filesystem/s3-nio-filesystem/badge.svg)
+[![Latest version](https://maven-badges.herokuapp.com/maven-central/org.bytemechanics.filesystem/s3-nio-filesystem/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.bytemechanics.filesystem/s3-nio-filesystem/badge.svg)
 [![Quality Gate](https://sonarcloud.io/api/badges/gate?key=org.bytemechanics.filesystem%3As3-nio-filesystem)](https://sonarcloud.io/dashboard/index/org.bytemechanics.filesystem%3As3-nio-filesystem)
 [![Coverage](https://sonarcloud.io/api/badges/measure?key=org.bytemechanics.filesystem%3As3-nio-filesystem&metric=coverage)](https://sonarcloud.io/dashboard/index/org.bytemechanics.filesystem%3As3-nio-filesystem)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
