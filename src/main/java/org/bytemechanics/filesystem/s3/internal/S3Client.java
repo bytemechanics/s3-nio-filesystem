@@ -15,7 +15,9 @@
  */
 package org.bytemechanics.filesystem.s3.internal;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.net.MediaType;
+import com.google.inject.Module;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +41,7 @@ import org.jclouds.blobstore.options.PutOptions;
 import org.jclouds.io.Payload;
 import org.jclouds.io.PayloadEnclosing;
 import static org.jclouds.io.Payloads.newByteArrayPayload;
+import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 
 /**
  * @author afarre
@@ -46,8 +49,8 @@ import static org.jclouds.io.Payloads.newByteArrayPayload;
  */
 public class S3Client implements Closeable{
 
+	private static final String FOLDER_SELF = ".self";
 	private static final String MULTIPART_MINSIZE="s3.filesystem.upload.multipart.minsize";
-	private static final String FOLDER_SELF_REFERENCE=".self";
 	
 	private final long multipartMinSize;
 	private final BlobStore blobStore;
@@ -60,6 +63,7 @@ public class S3Client implements Closeable{
 							.newBuilder("s3")
 								.endpoint(MessageFormat.format("{0}://{1}:{2}",_endpoint.getScheme(),_endpoint.getHost(),String.valueOf(_endpoint.getPort())))
 								.overrides(Optional.ofNullable(_environment).orElse(new Properties()))
+								.modules(ImmutableSet.<Module> of(new SLF4JLoggingModule()))
 								.credentials(_user,_password)
 								.buildView(BlobStoreContext.class)
 									.getBlobStore();
@@ -71,11 +75,11 @@ public class S3Client implements Closeable{
 	public Stream<StorageMetadata> listStorage(){
 		return this.blobStore.list()
 								.stream()
-									.map(storageMetadata -> (StorageMetadata)storageMetadata);
+									.map(storage -> (StorageMetadata)storage);
 	}
 	public String createFolder(final S3AbsolutePath _path){
 		return Optional.ofNullable(_path)
-					.map(path -> path.resolve(FOLDER_SELF_REFERENCE))
+					.map(path -> path.resolve(FOLDER_SELF))
 					.map(path -> (S3AbsolutePath)path)
 					.map(absolutePath -> Tuple.of(absolutePath,
 													this.blobStore.blobBuilder(absolutePath.getBucketPath())
@@ -90,7 +94,7 @@ public class S3Client implements Closeable{
 		Optional.ofNullable(_path)
 				.map(path -> 
 						(!this.blobStore.blobExists(path.getBucket(), path.getBucketPath()))? 
-								path.resolve(FOLDER_SELF_REFERENCE) 
+								path.resolve(FOLDER_SELF) 
 								: path)
 				.map(path -> (S3AbsolutePath)path)
 				.ifPresent(path -> this.blobStore.removeBlob(path.getBucket(), path.getBucketPath()));
@@ -100,13 +104,12 @@ public class S3Client implements Closeable{
 	}
 	public boolean exist(final S3AbsolutePath _path){
 		return this.blobStore.blobExists(_path.getBucket(), _path.getBucketPath())
-				||this.blobStore.blobExists(_path.getBucket(),((S3AbsolutePath)_path.resolve(FOLDER_SELF_REFERENCE)).getBucketPath());
+				||this.blobStore.blobExists(_path.getBucket(),((S3AbsolutePath)_path.resolve(FOLDER_SELF)).getBucketPath());
 	}
 	public Optional<BlobMetadata> getBlobMetadata(final S3AbsolutePath _path){
-		return Optional.ofNullable(
-							Optional.ofNullable(this.blobStore.blobMetadata(_path.getBucket(), _path.getBucketPath()))
+		return Optional.ofNullable(Optional.ofNullable(this.blobStore.blobMetadata(_path.getBucket(), _path.getBucketPath()))
 								.orElseGet(() -> 
-										this.blobStore.blobMetadata(_path.getBucket(), ((S3AbsolutePath)_path.resolve(FOLDER_SELF_REFERENCE)).getBucketPath())));
+										this.blobStore.blobMetadata(_path.getBucket(), ((S3AbsolutePath)_path.resolve(FOLDER_SELF)).getBucketPath())));
 	}
 	public Optional<Payload> getBlob(final S3AbsolutePath _path){
 		return Optional.ofNullable(this.blobStore.getBlob(_path.getBucket(), _path.getBucketPath()))

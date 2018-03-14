@@ -61,3 +61,6 @@ public class S3FileSystemTest {
 ```Java
 	Path path=this.fileSystem.getPath("test.pdf");
 ```
+## Tested with
+* Minio (https://www.minio.io/)
+* Hitachi (https://www.hitachivantara.com/en-us/products/storage.object-storage.html#categorycontent)

@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.bytemechanics.filesystem.s3.attributes.S3FileAttribute;
 import org.bytemechanics.filesystem.s3.attributes.S3FileAttributeView;
 import org.bytemechanics.filesystem.s3.attributes.S3FileAttributesExtractor;
@@ -116,10 +117,10 @@ public class S3FileSystemProvider extends FileSystemProvider{
 		this.fileSystems.put(_uri,_fileSystem);
 		return _fileSystem;
 	}
-	protected Optional<FileSystem> createFileSystem(final URI _uri,final S3Client _client){
+	protected Optional<S3FileSystem> createFileSystem(final URI _uri){
 		return clean(_uri)
-				.map(uri -> Tuple.of(uri,new S3FileSystem(uri,this,_client)))
-				.map(tuple -> putAndGet(tuple.left(),tuple.right()));
+				.map(uri -> LambdaUnchecker.uncheckedGet(() -> Tuple.of(uri,new S3FileSystem(uri,this))))
+				.map(tuple -> (S3FileSystem)putAndGet(tuple.left(),tuple.right()));
 	}
 	
 	@Override
@@ -136,8 +137,9 @@ public class S3FileSystemProvider extends FileSystemProvider{
 											.reduce(new Properties()
 													,(properties,tuple) -> {properties.setProperty(tuple.left(),tuple.right()); return properties;}
 													,(properties1,properties2) -> {properties1.putAll(properties2); return properties1;}))
-					.map(config -> new S3Client(clientURI(_uri), getUser(_uri,_environment), getPassword(_uri,_environment), config))
-					.flatMap(s3Client -> createFileSystem(_uri,s3Client))
+					.map(config -> Tuple.of(config,createFileSystem(_uri)))
+					.map(tuple -> tuple.replaceLeft(new S3Client(clientURI(_uri), getUser(_uri,_environment), getPassword(_uri,_environment), tuple.left())))
+					.flatMap(tuple -> tuple.right().map(fileSystem -> fileSystem.setClient(tuple.left())))
 					.orElseThrow(() -> new FileSystemAlreadyExistsException(SimpleFormat.format("FileSystem already exist for uri {}", _uri)));
 	}
 
@@ -237,8 +239,7 @@ public class S3FileSystemProvider extends FileSystemProvider{
 	@Override
 	public FileStore getFileStore(final Path _path) throws IOException {
 		return s3AbsolutePathVerified(_path)
-						.flatMap(path -> path.getFileSystem()
-												.getFileStoresStream()
+						.flatMap(path -> StreamSupport.stream(path.getFileSystem().getFileStores().spliterator(), false)
 													.filter(filestore -> filestore.name().equals(path.getBucket()))
 													.findAny())
 						.orElseThrow(() -> new IOException(SimpleFormat.format("No filestore matches with path {}",_path)));
