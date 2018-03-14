@@ -16,8 +16,7 @@
 package org.bytemechanics.filesystem.s3;
 
 import java.net.URI;
-import java.util.Optional;
-import org.bytemechanics.filesystem.s3.internal.copy.commons.functional.LambdaUnchecker;
+import org.bytemechanics.filesystem.s3.internal.URIBuilder;
 
 /**
  * @author afarre
@@ -34,8 +33,6 @@ public class S3SecureFileSystemProvider extends S3FileSystemProvider{
 	
 	@Override
 	protected URI clientURI(final URI _uri){
-		return  Optional.ofNullable(_uri)
-							.map(uri -> LambdaUnchecker.uncheckedGet(() -> new URI("https",null,uri.getHost(),uri.getPort(),uri.getPath(),null,null)))
-							.orElse(null);
+		return URIBuilder.build(_uri, "https");
 	}
 }

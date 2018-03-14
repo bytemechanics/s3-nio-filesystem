@@ -50,6 +50,7 @@ import org.bytemechanics.filesystem.s3.attributes.S3FileAttributesExtractor;
 import org.bytemechanics.filesystem.s3.internal.S3Client;
 import org.bytemechanics.filesystem.s3.internal.S3SeekableByteChannel;
 import org.bytemechanics.filesystem.s3.internal.Tuple;
+import org.bytemechanics.filesystem.s3.internal.URIBuilder;
 import org.bytemechanics.filesystem.s3.internal.copy.commons.functional.LambdaUnchecker;
 import org.bytemechanics.filesystem.s3.internal.copy.commons.string.SimpleFormat;
 import org.bytemechanics.filesystem.s3.path.S3AbsolutePath;
@@ -97,20 +98,15 @@ public class S3FileSystemProvider extends FileSystemProvider{
 					.map(passwordEncoded -> LambdaUnchecker.uncheckedGet(() -> URLDecoder.decode(passwordEncoded, "UTF-8")))
 					.orElseGet(() -> String.valueOf(_environment.get(S3FileSystemEnvironment.PROPERTY_CONNECTION_PASSWORD.name())));
 	}
-	private Optional<URI> clean(final URI _uri){
-		return  Optional.ofNullable(_uri)
-							.map(uri -> LambdaUnchecker.uncheckedGet(() -> new URI(uri.getScheme(),null,uri.getHost(),uri.getPort(),uri.getPath(),null,null)));
-	}
+	
 	protected URI clientURI(final URI _uri){
-		return  Optional.ofNullable(_uri)
-							.map(uri -> LambdaUnchecker.uncheckedGet(() -> new URI("http",null,uri.getHost(),uri.getPort(),uri.getPath(),null,null)))
-							.orElse(null);
+		return URIBuilder.build(_uri, "http");
 	}
 	
 	protected boolean existFileSystem(final URI _uri){
-		return clean(_uri)
-					.map(this.fileSystems::containsKey)
-					.orElse(false);
+		return URIBuilder.tryBuild(_uri)	
+							.map(this.fileSystems::containsKey)
+							.orElse(false);
 	}
 
 	protected FileSystem putAndGet(final URI _uri,final S3FileSystem _fileSystem){
@@ -118,9 +114,9 @@ public class S3FileSystemProvider extends FileSystemProvider{
 		return _fileSystem;
 	}
 	protected Optional<S3FileSystem> createFileSystem(final URI _uri){
-		return clean(_uri)
-				.map(uri -> LambdaUnchecker.uncheckedGet(() -> Tuple.of(uri,new S3FileSystem(uri,this))))
-				.map(tuple -> (S3FileSystem)putAndGet(tuple.left(),tuple.right()));
+		return URIBuilder.tryBuild(_uri)	
+							.map(uri -> LambdaUnchecker.uncheckedGet(() -> Tuple.of(uri,new S3FileSystem(uri,this))))
+							.map(tuple -> (S3FileSystem)putAndGet(tuple.left(),tuple.right()));
 	}
 	
 	@Override
@@ -145,9 +141,9 @@ public class S3FileSystemProvider extends FileSystemProvider{
 
 	@Override
 	public FileSystem getFileSystem(final URI _uri) {
-		return clean(_uri)
-					.map(this.fileSystems::get)
-					.orElseThrow(() -> new FileSystemNotFoundException(SimpleFormat.format("FileSystem not exist for uri {}", _uri)));
+		return URIBuilder.tryBuild(_uri)	
+							.map(this.fileSystems::get)
+							.orElseThrow(() -> new FileSystemNotFoundException(SimpleFormat.format("FileSystem not exist for uri {}", _uri)));
 	}
 
 	@Override

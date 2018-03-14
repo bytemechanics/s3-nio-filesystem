@@ -22,7 +22,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -61,7 +60,7 @@ public class S3Client implements Closeable{
 	public S3Client(final URI _endpoint,final String _user,final String _password,final Properties _environment){
 		this.blobStore=ContextBuilder
 							.newBuilder("s3")
-								.endpoint(MessageFormat.format("{0}://{1}:{2}",_endpoint.getScheme(),_endpoint.getHost(),String.valueOf(_endpoint.getPort())))
+								.endpoint(_endpoint.toString())
 								.overrides(Optional.ofNullable(_environment).orElse(new Properties()))
 								.modules(ImmutableSet.<Module> of(new SLF4JLoggingModule()))
 								.credentials(_user,_password)
