@@ -25,27 +25,27 @@ import org.bytemechanics.filesystem.s3.internal.copy.commons.string.SimpleFormat
  * @since 0.1.0
  */
 public enum S3FileAttributesExtractor {
-
-	lastModifiedTime("basic","lastModifiedTime",(attributeView) -> attributeView.lastModifiedTime()),
-	lastAccessTime("basic","lastAccessTime",(attributeView) -> attributeView.lastAccessTime()),
-	creationTime("basic","creationTime",(attributeView) -> attributeView.creationTime()),
-	isRegularFile("basic","isRegularFile",(attributeView) -> attributeView.isRegularFile()),
-	isDirectory("basic","isDirectory",(attributeView) -> attributeView.isDirectory()),
-	isSymbolicLink("basic","isSymbolicLink",(attributeView) -> attributeView.isSymbolicLink()),
-	isOther("basic","isOther",(attributeView) -> attributeView.isOther()),
-	size("basic","size",(attributeView) -> attributeView.size()),
-	fileKey("basic","fileKey",(attributeView) -> attributeView.fileKey()),
-	owner("posix","owner",(attributeView) -> attributeView.owner()),
-	group("posix","group",(attributeView) -> attributeView.group()),
-	permissions("posix","permissions",(attributeView) -> attributeView.permissions()),	
+	
+	LASTMODIFIEDTIME(S3FileAttributeType.BASIC,"lastModifiedTime",attributeView -> attributeView.lastModifiedTime()),
+	LASTACCESSTIME(S3FileAttributeType.BASIC,"lastAccessTime",attributeView -> attributeView.lastAccessTime()),
+	CREATIONTIME(S3FileAttributeType.BASIC,"creationTime",attributeView -> attributeView.creationTime()),
+	ISREGULARFILE(S3FileAttributeType.BASIC,"isRegularFile",attributeView -> attributeView.isRegularFile()),
+	ISDIRECTORY(S3FileAttributeType.BASIC,"isDirectory",attributeView -> attributeView.isDirectory()),
+	ISSYMBOLICLINK(S3FileAttributeType.BASIC,"isSymbolicLink",attributeView -> attributeView.isSymbolicLink()),
+	ISOTHER(S3FileAttributeType.BASIC,"isOther",attributeView -> attributeView.isOther()),
+	SIZE(S3FileAttributeType.BASIC,"size",attributeView -> attributeView.size()),
+	FILEKEY(S3FileAttributeType.BASIC,"fileKey",attributeView -> attributeView.fileKey()),
+	OWNER(S3FileAttributeType.POSIX,"owner",attributeView -> attributeView.owner()),
+	GROUP(S3FileAttributeType.POSIX,"group",attributeView -> attributeView.group()),
+	PERMISSIONS(S3FileAttributeType.POSIX,"permissions",attributeView -> attributeView.permissions()),	
 	;
 	
 	private final String view;
 	private final String attribute;
 	private final Function<S3FileAttributeView,Object> extractor;
 	
-	S3FileAttributesExtractor(final String _view,final String _key,final Function<S3FileAttributeView,Object> _extractor){
-		this.view=_view;
+	S3FileAttributesExtractor(final S3FileAttributeType _type,final String _key,final Function<S3FileAttributeView,Object> _extractor){
+		this.view=_type.getView();
 		this.attribute=_key;
 		this.extractor=_extractor;
 	}

@@ -250,7 +250,7 @@ public class S3FileSystemProvider extends FileSystemProvider{
 		if(!exist(_path)){
 			throw new IOException(SimpleFormat.format("File {} not exist",_path));
 		}
-		if(Stream.of(_modes).anyMatch(mode -> AccessMode.EXECUTE.equals(mode))){
+		if(Stream.of(_modes).anyMatch(AccessMode.EXECUTE::equals)){
 			throw new IOException("Access mode EXECUTE not supported");
 		}
 	}
@@ -266,7 +266,7 @@ public class S3FileSystemProvider extends FileSystemProvider{
 						.map(s3path -> Tuple.of(s3path,s3path.getFileSystem()))
 						.map(s3fileSystemTuple -> s3fileSystemTuple.replaceRight(s3fileSystemTuple.right().getClient()))
 						.filter(blobStoreTuple -> blobStoreTuple.right().exist(blobStoreTuple.left()))
-						.map(blobStoreTuple -> blobStoreTuple.left());
+						.map(Tuple::left);
 	}
 	protected boolean exist(final Path _path){
 		return existVerified(_path)
@@ -279,7 +279,7 @@ public class S3FileSystemProvider extends FileSystemProvider{
 					.map(s3path -> Tuple.of(s3path,s3path.getFileSystem()))
 					.map(s3fileSystemTuple -> s3fileSystemTuple.replaceRight(s3fileSystemTuple.right().getClient()))
 					.flatMap(blobStoreTuple -> blobStoreTuple.right().getBlobMetadata(blobStoreTuple.left()))
-					.map(blobMetadata -> new S3FileAttributeView(blobMetadata));
+					.map(S3FileAttributeView::new);
 	}
 	
 	@Override
@@ -319,8 +319,8 @@ public class S3FileSystemProvider extends FileSystemProvider{
 							.map(extractorStreamTuple -> extractorStreamTuple.right()
 																				.map(extractorFunction -> extractorFunction.replaceRight(extractorFunction.right().apply(extractorStreamTuple.left())))
 																				.map(extractedValue -> extractedValue.replaceRight(extractedValue.right().orElse(null)))
-																				.collect(Collectors.toMap(extractedValue -> extractedValue.left(), extractedValue -> extractedValue.right())))
-							.orElseGet(() -> Collections.emptyMap());
+																				.collect(Collectors.toMap(Tuple::left, Tuple::right)))
+							.orElseGet(Collections::emptyMap);
 	}
 
 	@Override

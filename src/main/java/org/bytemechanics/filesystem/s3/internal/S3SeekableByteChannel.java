@@ -65,7 +65,7 @@ public class S3SeekableByteChannel implements SeekableByteChannel {
 		this.client=_client;
         this.options =_options;
         this.attributes = _client.getBlobMetadata(_path)
-									.map(metadata -> new S3FileAttributeView(metadata))
+									.map(S3FileAttributeView::new)
 									.orElse(null);
         if((this.options.contains(StandardOpenOption.CREATE_NEW))&&(this.attributes!=null))
             throw new FileAlreadyExistsException(SimpleFormat.format("Object {} already exists", _path));
